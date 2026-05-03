@@ -12,7 +12,7 @@ const PaymentForm = ({setShippingForm}:{setShippingForm:(data:paymentFormInputs)
     })
     const router = useRouter()
     const handlePaymentForm:SubmitHandler<paymentFormInputs> = (data) => {
-
+                setShippingForm(data)
 
     }
   return (

@@ -40,7 +40,7 @@ export const shippingFormSchema = z.object({
   email: z.string().min(1,"Invalid email address"),
   address: z.string().min(1, "Address is required"),
   city: z.string().min(1, "City is required"),
-  phone: z.string().min(7, "Phone No between 7 and 11 digits").max(10, "It must be between 7 and 11 digits").regex(/^\d+5/, "phone no must only contain numbers"),
+  phone: z.string().min(7, "Phone No between 7 and 11 digits").max(10, "It must be between 7 and 11 digits").regex(/^\d+$/, "phone no must only contain numbers"),
 });
 
 export type ShippingFormInputs = z.infer<typeof shippingFormSchema>
