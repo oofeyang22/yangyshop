@@ -1,57 +1,104 @@
-import { paymentFormInputs, ShippingFormInputs, shippingFormSchema, paymentFormSchema } from '@/types'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowRight, ShoppingCart } from 'lucide-react'
-import Image from 'next/image'
-import { useRouter } from 'next/navigation'
-import React from 'react'
-import { SubmitHandler, useForm } from 'react-hook-form'
 
-const PaymentForm = ({setShippingForm}:{setShippingForm:(data:paymentFormInputs) => void}) => {
-    const {register, handleSubmit, formState: {errors}} = useForm<paymentFormInputs>({
-        resolver: zodResolver(paymentFormSchema)
-    })
-    const router = useRouter()
-    const handlePaymentForm:SubmitHandler<paymentFormInputs> = (data) => {
-                setShippingForm(data)
+'use client';
+import { paymentFormInputs, paymentFormSchema } from '@/types';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { Loader2 } from 'lucide-react';
 
-    }
-  return (
-    <form className='flex flex-col gap-4' onSubmit={handleSubmit(handlePaymentForm)}>
-        <div className='flex flex-col gap-1'>
-            <label htmlFor='cardHolder' className='text-xs text-gray-500 font-medium'>Name on Card</label>
-            <input className="border-b border-gray-200 py-2 outline-none text-sm" type="text" id="cardHolder" placeholder="John Doe" {...register('cardHolder')}/>
-            {errors.cardHolder && <p className='text-red-500 text-xs'>{errors.cardHolder.message}</p>}
-        </div>
-        <div className='flex flex-col gap-1'>
-            <label htmlFor='cardNumber' className='text-xs text-gray-500 font-medium'>Card Number</label>
-            <input className="border-b border-gray-200 py-2 outline-none text-sm" type="email" id="cardNumber" placeholder="65678" {...register('cardNumber')}/>
-            {errors.cardNumber && <p className='text-red-500 text-xs'>{errors.cardNumber.message}</p>}
-        </div>
-        <div className='flex flex-col gap-1'>
-            <label htmlFor='expirationDate' className='text-xs text-gray-500 font-medium'>Expiration Date</label>
-            <input className="border-b border-gray-200 py-2 outline-none text-sm" type="text" id="expirationDate" placeholder="01/27" {...register('expirationDate')}/>
-            {errors.expirationDate && <p className='text-red-500 text-xs'>{errors.expirationDate.message}</p>}
-        </div>
-        <div className='flex flex-col gap-1'>
-            <label htmlFor='cvv' className='text-xs text-gray-500 font-medium'>Cvv</label>
-            <input className="border-b border-gray-200 py-2 outline-none text-sm" type="text" id="cvv" placeholder="999" {...register('cvv')}/>
-            {errors.cvv && <p className='text-red-500 text-xs'>{errors.cvv.message}</p>}
-        </div>
-        <div className='flex items-center gap-2 mt-4'>
-          <Image src="/klarna.png" alt="card" width={50} height={25} className='rounded-md'/>
-          <Image src="/cards.png" alt="card" width={50} height={25} className='rounded-md'/>
-          <Image src="/stripe.png" alt="card" width={50} height={25} className='rounded-md'/>
-
-        </div>
-        <button 
-        type="submit"
-                        className='w-full bg-gray-800 text-white p-2 rounded-lg cursor-pointer flex items-center justify-center gap-2 hover:bg-gray-800 transition-all duration-300'
-        >
-            Checkout
-            <ShoppingCart className='w-3 h-3' />
-        </button>
-    </form>
-  )
+interface PaymentFormProps {
+  onSubmit: (data: paymentFormInputs) => Promise<void>;
+  placingOrder: boolean;
 }
 
-export default PaymentForm
+const PaymentForm = ({ onSubmit, placingOrder }: PaymentFormProps) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<paymentFormInputs>({
+    resolver: zodResolver(paymentFormSchema),
+  });
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Card Holder Name
+        </label>
+        <input
+          {...register('cardHolder')}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+          placeholder="John Doe"
+        />
+        {errors.cardHolder && (
+          <p className="text-red-500 text-xs mt-1">{errors.cardHolder.message}</p>
+        )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Card Number
+        </label>
+        <input
+          {...register('cardNumber')}
+          type="text"
+          maxLength={16}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+          placeholder="1234 5678 9012 3456"
+        />
+        {errors.cardNumber && (
+          <p className="text-red-500 text-xs mt-1">{errors.cardNumber.message}</p>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Expiration Date
+          </label>
+          <input
+            {...register('expirationDate')}
+            placeholder="MM/YY"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+          />
+          {errors.expirationDate && (
+            <p className="text-red-500 text-xs mt-1">{errors.expirationDate.message}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            CVV
+          </label>
+          <input
+            {...register('cvv')}
+            type="password"
+            maxLength={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+            placeholder="123"
+          />
+          {errors.cvv && (
+            <p className="text-red-500 text-xs mt-1">{errors.cvv.message}</p>
+          )}
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        disabled={placingOrder}
+        className="w-full bg-gray-800 text-white py-3 rounded-md hover:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      >
+        {placingOrder ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Processing...
+          </>
+        ) : (
+          'Place Order'
+        )}
+      </button>
+    </form>
+  );
+};
+
+export default PaymentForm;

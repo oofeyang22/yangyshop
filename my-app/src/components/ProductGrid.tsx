@@ -1,4 +1,3 @@
-// components/ProductGrid.tsx
 
 import { ProductType } from '@/types';
 import ProductCard from './ProductCard';

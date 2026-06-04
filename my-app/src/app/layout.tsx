@@ -4,7 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ToastContainer } from "react-toastify";
-
+import NextAuthSessionProvider from './providers/SessionProvider';
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -28,13 +28,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`} 
+        suppressHydrationWarning
       >
+        <NextAuthSessionProvider>
         <div className="mx-auto p-4 sm:p-0 sm:max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-6xl">
           <Navbar/>
           {children}
           <Footer/>
         </div>
+        </NextAuthSessionProvider>
         <ToastContainer position="bottom-right"/>
       </body>
     </html>

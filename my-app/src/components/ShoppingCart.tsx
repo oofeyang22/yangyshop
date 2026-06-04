@@ -8,10 +8,10 @@ import { CartItemsType } from '@/types'
 const ShoppingCartIcon = () => {
   const { cart } = useCartStore()
   
-  // Ensure cart is an array before reducing
+
   const safeCart: CartItemsType = Array.isArray(cart) ? cart : []
   
-  // Calculate total quantity correctly
+
   const totalQuantity = safeCart.reduce((acc, item) => {
     return acc + (item.quantity || 0)
   }, 0)

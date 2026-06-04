@@ -1,79 +1,45 @@
 
-import ProductInteraction from '@/components/ProductInteraction';
-import { getProductById, generateProductStaticParams } from '@/data/products';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
+import Image from 'next/image';
+import ProductInteraction from '@/components/ProductInteraction';
+import { Product } from '@/lib/models';
 
-export { generateProductStaticParams as generateStaticParams };
-
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const product = getProductById(parseInt(id));
-  
-  if (!product) {
-    return {
-      title: 'Product Not Found',
-    };
-  }
-  
-  return {
-    title: product.name,
-    description: product.description,
-  };
-}
-
-const ProductPage = async ({
-  params,
-  searchParams,
+export default async function ProductPage({
+  params, searchParams
 }: {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ color?: string; size?: string }>;
-}) => {
+}) {
   const { id } = await params;
   const { size, color } = await searchParams;
-  
-  const product = getProductById(parseInt(id));
-  
-  if (!product) {
-    notFound();
-  }
+  //const product = await fetchProductById(parseInt(id)).catch(() => null);
+  const product = await Product.findOne({ id: parseInt(id) }).lean();
 
-  const selectedSize = size || (product.sizes[0] as string);
+  if (!product) notFound();
+
+    const selectedSize = size || (product.sizes[0] as string);
   const selectedColor = color || (product.colors[0] as string);
-  
+
   return (
-    <div className='flex flex-col lg:flex-row gap-4 md:gap-12 mt-10'>
-      <div className='w-full lg:w-5/12 relative aspect-2/3'>
-        <Image 
-          src={product.images[selectedColor]} 
-          alt={product.name} 
-          fill 
-          className='object-contain rounded-md'
-        />
-      </div>
-      <div className='w-full lg:w-7/12 flex flex-col gap-4'>
-        <h1 className='text-2xl font-medium'>{product.name}</h1>
-        <p className='text-gray-500'>{product.description}</p>
-        <h2 className='text-2xl font-semibold'>${product.price.toFixed(2)}</h2>
-        <ProductInteraction 
-          product={product} 
-          selectedSize={selectedSize} 
-          selectedColor={selectedColor}
-        />
-        <div className='flex items-center gap-2 mt-4'>
-          <Image src="/klarna.png" alt="card" width={50} height={25} className='rounded-md'/>
-          <Image src="/cards.png" alt="card" width={50} height={25} className='rounded-md'/>
-          <Image src="/stripe.png" alt="card" width={50} height={25} className='rounded-md'/>
+    <div className="container mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="relative aspect-square">
+          <Image
+            src={product.images[product.colors[0]]}
+            alt={product.name}
+            fill
+            className="object-cover rounded-lg"
+          />
         </div>
-        <p className='text-xs text-gray-500'>
-          By clicking pay now, you agree to our{' '}
-          <span className='underline hover:text-black'>Privacy Policy</span>. You authorize us to charge your selected payment method
-          for total amount shown. All sales are subject to our return and{' '}
-          <span className='underline hover:text-black'>Refund Policies.</span>
-        </p>
-      </div>  
+        <div className="flex flex-col gap-4">
+          <h1 className="text-3xl font-bold">{product.name}</h1>
+          <p className="text-gray-600">{product.description}</p>
+          <p className="text-2xl font-bold">${product.price.toFixed(2)}</p>
+          {/* Move useState/addToCart logic into this client component */}
+          <ProductInteraction product={product} selectedSize={selectedSize} 
+          selectedColor={selectedColor}/>
+        </div>
+      </div>
     </div>
   );
-};
-
-export default ProductPage;
+}

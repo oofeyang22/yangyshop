@@ -34,7 +34,7 @@ export type ShippingFormData = {
   saveAddress: boolean;
 };
 
-// If you need a Zod schema later, create it separately
+
 export const shippingFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().min(1,"Invalid email address"),
@@ -45,7 +45,7 @@ export const shippingFormSchema = z.object({
 
 export type ShippingFormInputs = z.infer<typeof shippingFormSchema>
 
-// If you need a Zod schema later, create it separately
+
 export const paymentFormSchema = z.object({
   cardHolder: z.string().min(1, "Card holder is required"),
   cardNumber: z.string().min(16,"Card number is required").max(16,"Card number is required"),

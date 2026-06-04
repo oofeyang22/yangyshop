@@ -1,4 +1,4 @@
-// data/products.ts
+
 import { ProductType, ProductsType } from '@/types';
 
 export const products: ProductsType = [
@@ -96,12 +96,12 @@ export const products: ProductsType = [
   },
 ];
 
-// Helper function to get product by ID
+
 export function getProductById(id: number): ProductType | undefined {
   return products.find(product => product.id === id);
 }
 
-// Helper function to generate static params
+
 export function generateProductStaticParams() {
   return products.map((product) => ({
     id: product.id.toString(),
