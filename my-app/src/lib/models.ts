@@ -240,6 +240,8 @@ export interface IPaymentInfo {
   method: 'card' | 'paypal' | 'cash';
   cardLast4?: string;
   status: 'pending' | 'paid' | 'failed';
+  stripePaymentIntentId?: string; 
+  stripeCustomerId?: string;
 }
 
 export interface IOrder {
@@ -282,6 +284,8 @@ const PaymentInfoSchema = new Schema<IPaymentInfo>({
   method: { type: String, enum: ['card', 'paypal', 'cash'], required: true },
   cardLast4: { type: String },
   status: { type: String, enum: ['pending', 'paid', 'failed'], default: 'pending' },
+  stripePaymentIntentId: { type: String }, 
+  stripeCustomerId: { type: String }, 
 });
 
 const OrderSchema = new Schema<IOrder>(
