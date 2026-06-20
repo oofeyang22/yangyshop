@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState } from 'react';
@@ -10,13 +9,11 @@ import {
   Elements,
   useStripe,
   useElements,
-  CardNumberElement,
-  CardExpiryElement,
-  CardCvcElement,
+  PaymentElement,
 } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 
-// Initialize Stripe
+
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 interface PaymentFormProps {
@@ -44,27 +41,9 @@ const StripePaymentForm = ({ onSubmit, placingOrder, shippingData }: PaymentForm
     setError(null);
 
     try {
-      // First, create payment intent on the server
-      const response = await fetch('/api/create-payment-intent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          shippingAddress: shippingData,
-          discount: 0,
-          shippingFee: 10,
-        }),
-      });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create payment intent');
-      }
-
-      // Confirm the payment
       const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
         elements,
-        clientSecret: data.clientSecret,
         confirmParams: {
           return_url: `${window.location.origin}/order-confirmation`,
           payment_method_data: {
@@ -100,21 +79,14 @@ const StripePaymentForm = ({ onSubmit, placingOrder, shippingData }: PaymentForm
           throw new Error(orderData.error || 'Failed to create order');
         }
 
-        // Redirect to order confirmation
+
         window.location.href = `/order-confirmation?orderId=${orderData.order.orderId}`;
       } else if (paymentIntent && paymentIntent.status === 'requires_action') {
-        // Handle 3D Secure
-        const clientSecret = paymentIntent.client_secret;
 
-        if (!clientSecret) {
-          throw new Error('Missing client secret');
-        }
-
-        const { error: actionError } = await stripe.handleCardAction(clientSecret);
-        if (actionError) {
-          setError(actionError.message ?? 'Payment authentication failed');
-          setProcessing(false);
-        }
+        setError('Additional authentication required. Please try again.');
+        setProcessing(false);
+      } else {
+        setProcessing(false);
       }
     } catch (err: any) {
       setError(err.message);
@@ -128,63 +100,11 @@ const StripePaymentForm = ({ onSubmit, placingOrder, shippingData }: PaymentForm
         <CreditCard className="w-5 h-5 text-gray-600" />
         <h3 className="text-sm font-medium text-gray-800">Pay with Card (Stripe)</h3>
       </div>
-      <div className="bg-gray-50 p-4 rounded-lg">
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Card Information
-          </label>
-          <div className="space-y-3">
-            <div className="border border-gray-300 rounded-md p-3 bg-white">
-              <div className="flex items-center gap-2 mb-2">
-                <CreditCard className="w-4 h-4 text-gray-400" />
-                <span className="text-xs text-gray-500">Card Number</span>
-              </div>
-              <CardNumberElement
-                options={{
-                  style: {
-                    base: {
-                      fontSize: '16px',
-                      color: '#424770',
-                      '::placeholder': {
-                        color: '#aab7c4',
-                      },
-                    },
-                  },
-                }}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="border border-gray-300 rounded-md p-3 bg-white">
-                <span className="text-xs text-gray-500">Expiry Date</span>
-                <CardExpiryElement
-                  options={{
-                    style: {
-                      base: {
-                        fontSize: '16px',
-                        color: '#424770',
-                      },
-                    },
-                  }}
-                />
-              </div>
-              <div className="border border-gray-300 rounded-md p-3 bg-white">
-                <span className="text-xs text-gray-500">CVC</span>
-                <CardCvcElement
-                  options={{
-                    style: {
-                      base: {
-                        fontSize: '16px',
-                        color: '#424770',
-                      },
-                    },
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div className="flex items-center gap-2 text-xs text-gray-500">
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <PaymentElement />
+
+        <div className="flex items-center gap-2 text-xs text-gray-500 mt-4">
           <Lock className="w-3 h-3" />
           <span>Your payment information is secure and encrypted</span>
         </div>
@@ -198,7 +118,7 @@ const StripePaymentForm = ({ onSubmit, placingOrder, shippingData }: PaymentForm
 
       <button
         type="submit"
-        disabled={!stripe || processing || placingOrder}
+        disabled={!stripe || !elements || processing || placingOrder}
         className="w-full bg-gray-800 text-white py-3 rounded-md hover:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {(processing || placingOrder) ? (
@@ -218,6 +138,7 @@ const StripePaymentForm = ({ onSubmit, placingOrder, shippingData }: PaymentForm
 const PaymentFormWrapper = (props: PaymentFormProps) => {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useState(() => {
     if (props.shippingData) {
@@ -233,11 +154,16 @@ const PaymentFormWrapper = (props: PaymentFormProps) => {
       })
         .then(res => res.json())
         .then(data => {
-          setClientSecret(data.clientSecret);
+          if (data.clientSecret) {
+            setClientSecret(data.clientSecret);
+          } else {
+            setError(data.error || 'Failed to initialize payment');
+          }
           setLoading(false);
         })
         .catch(err => {
           console.error('Error creating payment intent:', err);
+          setError('Failed to initialize payment');
           setLoading(false);
         });
     }
@@ -254,19 +180,27 @@ const PaymentFormWrapper = (props: PaymentFormProps) => {
   if (!clientSecret) {
     return (
       <div className="text-center py-12 text-red-500">
-        Unable to initialize payment. Please try again.
+        {error || 'Unable to initialize payment. Please try again.'}
       </div>
     );
   }
 
   return (
-    <Elements stripe={stripePromise} options={{ clientSecret }}>
+    <Elements
+      stripe={stripePromise}
+      options={{
+        clientSecret,
+        appearance: {
+          theme: 'stripe',
+        },
+      }}
+    >
       <StripePaymentForm {...props} />
     </Elements>
   );
 };
 
-// Export the main component
+
 export default function PaymentForm(props: PaymentFormProps) {
   return <PaymentFormWrapper {...props} />;
 }
