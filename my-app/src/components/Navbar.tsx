@@ -23,7 +23,7 @@ function Navbar() {
         <Link href={"/"}>
           <Home className='w-4 h-4 text-gray-500'/>
         </Link>
-        <Bell className='w-4 h-4 text-gray-500'/>
+
         <ShoppingCartIcon/>
         
         {status === 'loading' ? (
