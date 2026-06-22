@@ -1,3 +1,4 @@
+//products/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/utils';
 import { Product } from '@/lib/models';
