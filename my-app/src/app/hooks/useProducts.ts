@@ -1,8 +1,9 @@
+
 import { useState, useEffect } from 'react';
 import { fetchProducts, fetchProductById } from '../services/productService';
 import { ProductType } from '@/types';
 
-export function useProducts(page = 1, limit = 12) {
+export function useProducts(page = 1, limit = 12, category = '') {
   const [products, setProducts] = useState<ProductType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,7 +17,7 @@ export function useProducts(page = 1, limit = 12) {
     const loadProducts = async () => {
       try {
         setLoading(true);
-        const data = await fetchProducts(page, limit);
+        const data = await fetchProducts(page, limit, category);
         setProducts(data.products);
         setPagination(data.pagination);
       } catch (err) {
@@ -27,7 +28,7 @@ export function useProducts(page = 1, limit = 12) {
     };
 
     loadProducts();
-  }, [page, limit]);
+  }, [page, limit, category]);
 
   return { products, loading, error, pagination };
 }

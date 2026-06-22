@@ -6,6 +6,7 @@ export interface IProduct {
   shortDescription: string;
   description: string;
   price: number;
+  category: string;
   sizes: string[];
   colors: string[];
   images: Map<string, string>;
@@ -35,6 +36,11 @@ const ProductSchema = new Schema<IProduct>(
     price: {
       type: Number,
       required: true,
+    },
+    category: {
+      type: String,
+      required: true,
+      index: true,
     },
     sizes: {
       type: [String],

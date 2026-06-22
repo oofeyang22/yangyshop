@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed": "curl -X POST http://localhost:3000/api/seed"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.11.2",

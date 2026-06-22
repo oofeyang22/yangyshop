@@ -1,3 +1,5 @@
+
+
 import { ProductType } from '@/types';
 
 interface ProductsResponse {
@@ -13,12 +15,17 @@ interface ProductsResponse {
 export async function fetchProducts(
   page = 1,
   limit = 12,
+  category = '',
   search?: string
 ): Promise<ProductsResponse> {
   const params = new URLSearchParams({
     page: page.toString(),
     limit: limit.toString(),
   });
+
+  if (category) {
+    params.append('category', category);
+  }
 
   if (search) {
     params.append('search', search);

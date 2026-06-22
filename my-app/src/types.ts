@@ -7,6 +7,7 @@ export type ProductType = {
   shortDescription: string;
   description: string;
   price: number;
+  category: string;
   sizes: string[];
   colors: string[];
   images: Record<string, string>;

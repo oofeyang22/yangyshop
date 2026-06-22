@@ -7,9 +7,7 @@ export async function POST() {
   try {
     await connectToDatabase();
 
-
     await Product.deleteMany({});
-
 
     const productsToInsert = staticProducts.map(product => ({
       id: product.id,
@@ -17,6 +15,7 @@ export async function POST() {
       shortDescription: product.shortDescription,
       description: product.description,
       price: product.price,
+      category: product.category,
       sizes: product.sizes,
       colors: product.colors,
       images: new Map(Object.entries(product.images)),

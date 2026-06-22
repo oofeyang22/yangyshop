@@ -1,4 +1,5 @@
 
+
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import ProductInteraction from '@/components/ProductInteraction';
@@ -12,32 +13,43 @@ export default async function ProductPage({
 }) {
   const { id } = await params;
   const { size, color } = await searchParams;
-  //const product = await fetchProductById(parseInt(id)).catch(() => null);
+
   const product = await Product.findOne({ id: parseInt(id) }).lean();
 
   if (!product) notFound();
 
-    const selectedSize = size || (product.sizes[0] as string);
-  const selectedColor = color || (product.colors[0] as string);
+  // Serialize the Mongoose document into a plain object
+  const serializedProduct = {
+    ...product,
+    _id: product._id.toString(),
+    createdAt: product.createdAt?.toISOString(),
+    updatedAt: product.updatedAt?.toISOString(),
+   images: product.images as Record<string, string>,
+  };
+
+  const selectedSize = size || (serializedProduct.sizes[0] as string);
+  const selectedColor = color || (serializedProduct.colors[0] as string);
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="relative aspect-square">
           <Image
-            src={product.images[product.colors[0]]}
-            alt={product.name}
+            src={serializedProduct.images[serializedProduct.colors[0]]}
+            alt={serializedProduct.name}
             fill
             className="object-cover rounded-lg"
           />
         </div>
         <div className="flex flex-col gap-4">
-          <h1 className="text-3xl font-bold">{product.name}</h1>
-          <p className="text-gray-600">{product.description}</p>
-          <p className="text-2xl font-bold">${product.price.toFixed(2)}</p>
-          {/* Move useState/addToCart logic into this client component */}
-          <ProductInteraction product={product} selectedSize={selectedSize} 
-          selectedColor={selectedColor}/>
+          <h1 className="text-3xl font-bold">{serializedProduct.name}</h1>
+          <p className="text-gray-600">{serializedProduct.description}</p>
+          <p className="text-2xl font-bold">${serializedProduct.price.toFixed(2)}</p>
+          <ProductInteraction
+            product={serializedProduct}
+            selectedSize={selectedSize}
+            selectedColor={selectedColor}
+          />
         </div>
       </div>
     </div>

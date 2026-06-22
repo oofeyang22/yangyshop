@@ -1,4 +1,5 @@
 
+
 'use client';
 import React from 'react';
 import { Categories } from './Categories';
@@ -7,6 +8,7 @@ import Link from 'next/link';
 import Filter from './Filter';
 import { categories } from '@/data/categories';
 import { useProducts } from '../app/hooks/useProducts';
+import { useSearchParams } from 'next/navigation';
 
 interface ProductListProps {
   category: string;
@@ -15,7 +17,13 @@ interface ProductListProps {
 }
 
 function ProductList({ category, params, showFilter = false }: ProductListProps) {
-  const { products, loading, error } = useProducts(1, 12);
+  const searchParams = useSearchParams();
+
+  // Always read the live category from the URL so clicking a category
+  // immediately re-fetches the right products.
+  const activeCategory = searchParams.get('category') || category || '';
+
+  const { products, loading, error } = useProducts(1, 12, activeCategory);
 
   if (loading) {
     return (
@@ -39,7 +47,7 @@ function ProductList({ category, params, showFilter = false }: ProductListProps)
       <Filter />
       <ProductGrid products={products} />
       <Link 
-        href={category ? `/products/?category=${category}` : "/products"} 
+        href={activeCategory ? `/products/?category=${activeCategory}` : "/products"} 
         className='flex justify-end mt-4 underline text-sm text-gray-500'
       >
         View all Products
