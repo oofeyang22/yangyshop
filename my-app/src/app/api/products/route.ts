@@ -2,6 +2,7 @@
 
 //products/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { SortOrder } from 'mongoose'
 import { connectToDatabase } from '@/lib/utils';
 import { Product } from '@/lib/models';
 
@@ -14,6 +15,16 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '100');
     const page = parseInt(searchParams.get('page') || '1');
     const search = searchParams.get('search');
+    const sort = searchParams.get('sort') || 'newest';
+
+    const sortMap: Record<string, Record<string, SortOrder>> = {
+    newest: { createdAt: -1 },
+    oldest: { createdAt: 1 },
+    asc:    { price: 1 },
+    desc:   { price: -1 },
+    };
+
+const sortQuery: Record<string, SortOrder> = sortMap[sort] ?? { createdAt: -1 };
 
     let query: any = {};
 
@@ -33,7 +44,8 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     const products = await Product.find(query)
-      .sort({ id: 1 })
+      //.sort({ id: 1 })
+      .sort(sortQuery)
       .skip(skip)
       .limit(limit);
 

@@ -16,7 +16,8 @@ export async function fetchProducts(
   page = 1,
   limit = 12,
   category = '',
-  search?: string
+  search?: string,
+  sort = '' 
 ): Promise<ProductsResponse> {
   const params = new URLSearchParams({
     page: page.toString(),
@@ -29,6 +30,10 @@ export async function fetchProducts(
 
   if (search) {
     params.append('search', search);
+  }
+
+  if (sort) {                          
+    params.append('sort', sort);
   }
 
   const response = await fetch(`/api/products?${params.toString()}`);

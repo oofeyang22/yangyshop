@@ -22,8 +22,9 @@ function ProductList({ category, params, showFilter = false }: ProductListProps)
   // Always read the live category from the URL so clicking a category
   // immediately re-fetches the right products.
   const activeCategory = searchParams.get('category') || category || '';
+  const activeSort = searchParams.get('sort') || '';
 
-  const { products, loading, error } = useProducts(1, 12, activeCategory);
+  const { products, loading, error } = useProducts(1, 12, activeCategory, activeSort);
 
   if (loading) {
     return (
@@ -47,8 +48,15 @@ function ProductList({ category, params, showFilter = false }: ProductListProps)
       <Filter />
       <ProductGrid products={products} />
       <Link 
-        href={activeCategory ? `/products/?category=${activeCategory}` : "/products"} 
-        className='flex justify-end mt-4 underline text-sm text-gray-500'
+        /*href={activeCategory ? `/products/?category=${activeCategory}` : "/products"} 
+        className='flex justify-end mt-4 underline text-sm text-gray-500'*/
+        href={(() => {
+        const params = new URLSearchParams();
+        if (activeCategory) params.set('category', activeCategory);
+        if (activeSort) params.set('sort', activeSort);
+        const query = params.toString();
+        return query ? `/products/?${query}` : '/products';
+        })()}
       >
         View all Products
       </Link>

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { fetchProducts, fetchProductById } from '../services/productService';
 import { ProductType } from '@/types';
 
-export function useProducts(page = 1, limit = 12, category = '') {
+export function useProducts(page = 1, limit = 12, category = '', sort = '') {
   const [products, setProducts] = useState<ProductType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,7 +17,7 @@ export function useProducts(page = 1, limit = 12, category = '') {
     const loadProducts = async () => {
       try {
         setLoading(true);
-        const data = await fetchProducts(page, limit, category);
+        const data = await fetchProducts(page, limit, category, undefined, sort);
         setProducts(data.products);
         setPagination(data.pagination);
       } catch (err) {
@@ -28,7 +28,7 @@ export function useProducts(page = 1, limit = 12, category = '') {
     };
 
     loadProducts();
-  }, [page, limit, category]);
+  }, [page, limit, category, sort]);
 
   return { products, loading, error, pagination };
 }
