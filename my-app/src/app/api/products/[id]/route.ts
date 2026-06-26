@@ -1,16 +1,18 @@
-//products/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/utils';
 import { Product } from '@/lib/models';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+
+  const { id: rawId } = await params;
+
   try {
     await connectToDatabase();
 
-    const id = parseInt(params.id);
+    const id = parseInt(rawId);
 
     if (isNaN(id)) {
       return NextResponse.json(
@@ -32,7 +34,7 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching product:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch product' },
+      { error: 'Internal Server Error' },
       { status: 500 }
     );
   }
